@@ -1,0 +1,17 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  # https://skaffold.dev/docs/environment/local-cluster/
+  local:
+    push: false
+  artifacts:
+  - image: controller
+    context: src/controller
+  - image: hours
+    context: src/hours
+  - image: minutes
+    context: src/minutes
+  - image: seconds
+    context: src/seconds
+  tagPolicy:
+    gitCommit: {}

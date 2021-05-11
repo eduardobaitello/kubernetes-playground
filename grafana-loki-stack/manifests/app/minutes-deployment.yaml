@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: minutes
+  name: minutes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minutes
+  template:
+    metadata:
+      labels:
+        app: minutes
+    spec:
+      containers:
+        - env:
+            - name: PORT
+              value: "80"
+          image: minutes
+          imagePullPolicy: Never
+          name: minutes
+          ports:
+            - containerPort: 80
+          resources: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: minutes
+  name: minutes
+spec:
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 80
+  selector:
+    app: minutes
