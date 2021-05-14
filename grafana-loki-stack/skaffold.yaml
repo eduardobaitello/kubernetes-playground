@@ -4,6 +4,7 @@ build:
   # https://skaffold.dev/docs/environment/local-cluster/
   local:
     push: false
+    useBuildkit: false
   artifacts:
   - image: controller
     context: src/controller
