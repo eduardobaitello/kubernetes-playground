@@ -1,0 +1,17 @@
+apiVersion: v1
+data:
+  local-filesystem.yaml: |
+    apiVersion: 1
+
+    providers:
+      - name: 'local-filesystem'
+        type: file
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards
+kind: ConfigMap
+metadata:
+  labels:
+    app: grafana
+  name: grafana-provisioning-dashboards
