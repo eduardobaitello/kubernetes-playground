@@ -1,0 +1,33 @@
+apiVersion: v1
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 5s
+
+    rule_files: []
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      - job_name: 'app_controller'
+        static_configs:
+          - targets: ['controller.clock:80']
+
+      - job_name: 'app_seconds'
+        static_configs:
+          - targets: ['seconds.clock:80']
+
+      - job_name: 'app_minutes'
+        static_configs:
+          - targets: ['minutes.clock:80']
+
+      - job_name: 'app_hours'
+        static_configs:
+          - targets: ['hours.clock:80']
+kind: ConfigMap
+metadata:
+  labels:
+    app: prometheus
+  name: prometheus-configmap
