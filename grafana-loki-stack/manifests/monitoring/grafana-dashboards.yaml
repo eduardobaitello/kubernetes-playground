@@ -1641,12 +1641,12 @@ data:
         "pluginVersion": "7.5.4",
         "targets": [
           {
-            "expr": "{compose_service=~\"controller|hours|minutes|seconds\"} | json | level=\"error\" | line_format \"Level: {{ .level }}\\nApplication: {{ .compose_service }}\\nMessage: {{ .message }}\"",
+            "expr": "{app=~\"controller|hours|minutes|seconds\"} |= \"error\"",
             "legendFormat": "",
             "refId": "A"
           }
         ],
-        "title": "Logs de erro",
+        "title": "Error logs",
         "type": "logs"
       },
       {
@@ -1696,8 +1696,8 @@ data:
         "steppedLine": false,
         "targets": [
           {
-            "expr": "sum by (compose_service) (rate({compose_service=~\"controller|seconds|minutes|hours\"} | json | level=\"error\" [$__interval]))",
-            "legendFormat": "APP: {{ compose_service }}",
+            "expr": "sum by (app) (rate({app=~\"controller|hours|minutes|seconds\"} |= \"error\" [$__interval]))",
+            "legendFormat": "APP: {{ app }}",
             "refId": "A"
           }
         ],
@@ -1705,7 +1705,7 @@ data:
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Logs de erro por segundo",
+        "title": "Error logs per second",
         "tooltip": {
           "shared": true,
           "sort": 0,
