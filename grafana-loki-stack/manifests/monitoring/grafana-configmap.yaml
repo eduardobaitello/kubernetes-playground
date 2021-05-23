@@ -2,6 +2,8 @@ apiVersion: v1
 data:
   GF_SECURITY_ADMIN_PASSWORD: admin
   GF_USERS_ALLOW_SIGN_UP: "false"
+  GF_SERVER_ROOT_URL: "http://localhost:3000/grafana"
+  GF_SERVER_SERVE_FROM_SUB_PATH: "true"
 kind: ConfigMap
 metadata:
   labels:

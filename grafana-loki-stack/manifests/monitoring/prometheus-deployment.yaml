@@ -6,6 +6,8 @@ metadata:
   name: prometheus
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: prometheus
@@ -18,7 +20,9 @@ spec:
         - args:
             - --config.file=/etc/prometheus/prometheus.yml
             - --storage.tsdb.path=/prometheus
+            - --web.external-url=http://localhost:9090/prometheus/
           image: prom/prometheus:v2.25.2
+          imagePullPolicy: IfNotPresent
           name: prometheus
           ports:
             - containerPort: 9090

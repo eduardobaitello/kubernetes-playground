@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-clock
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /v1/current-time
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /clock
+        pathType: Prefix
+        backend:
+          service:
+            name: controller
+            port:
+              number: 80

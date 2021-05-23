@@ -6,6 +6,8 @@ metadata:
   name: grafana
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: grafana
@@ -15,18 +17,11 @@ spec:
         app: grafana
     spec:
       containers:
-        - env:
-            - name: GF_SECURITY_ADMIN_PASSWORD
-              valueFrom:
-                configMapKeyRef:
-                  key: GF_SECURITY_ADMIN_PASSWORD
-                  name: grafana-configmap
-            - name: GF_USERS_ALLOW_SIGN_UP
-              valueFrom:
-                configMapKeyRef:
-                  key: GF_USERS_ALLOW_SIGN_UP
-                  name: grafana-configmap
+        - envFrom:
+            - configMapRef:
+                name: grafana-configmap
           image: grafana/grafana:7.5.4
+          imagePullPolicy: IfNotPresent
           name: grafana
           ports:
             - containerPort: 3000
