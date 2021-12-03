@@ -1,0 +1,12 @@
+# Provide a custom message
+message: "Ameba!"
+
+# Remember to set service.type=ClusterIP if you are using an ingress
+ingress:
+  configured: true
+  rewritePath: false
+  pathPrefix: "/"
+
+service:
+  type: ClusterIP
+  port: 80
