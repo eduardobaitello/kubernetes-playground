@@ -25,7 +25,12 @@ Run the following commands to install the Kong release:
 ```
 helm repo add kong https://charts.konghq.com
 helm repo update
-helm install --create-namespace kong kong/kong -n kong --set ingressController.installCRDs=false --version 2.6.1
+helm install --create-namespace kong kong/kong -n kong --set-file dblessConfig.config=./dbless-config.yaml --values values-kong.yaml --version 2.6.1
+```
+
+To upgrade the existing release:
+```
+helm upgrade kong kong/kong -n kong --set-file dblessConfig.config=./dbless-config.yaml --values values-kong.yaml
 ```
 
 ## Deploying test applications
