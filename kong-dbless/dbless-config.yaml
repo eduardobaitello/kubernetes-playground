@@ -4,10 +4,10 @@ _transform: true
 services:
 - name: hot-dog-service
   protocol: http
-  host: hello-kubernetes-hot-dog.hot-dog
+  host: hello-kubernetes-hot-dog.minikube.local
   port: 80
   path: /
-  # url: http://hello-kubernetes-hot-dog.hot-dog/
+  # url: http://ingress-nginx-controller.ingress-nginx/
 
 routes:
 - name: hot-dog-route

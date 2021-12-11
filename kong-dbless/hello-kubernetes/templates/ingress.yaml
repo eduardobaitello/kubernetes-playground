@@ -1,0 +1,26 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "hello-kubernetes.name" . -}}
+{{- $svcPort := .Values.service.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "hello-kubernetes.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  rules:
+  - host: {{ $fullName }}.minikube.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: {{ $fullName }}
+            port:
+              number: {{ $svcPort }}
+{{- end }}

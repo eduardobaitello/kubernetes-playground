@@ -3,9 +3,11 @@ message: "Ameba!"
 
 # Remember to set service.type=ClusterIP if you are using an ingress
 ingress:
-  configured: true
+  enabled: true
   rewritePath: false
   pathPrefix: "/"
+  annotations:
+    kubernetes.io/ingress.class: nginx
 
 service:
   type: ClusterIP
