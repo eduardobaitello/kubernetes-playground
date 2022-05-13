@@ -37,6 +37,12 @@ services:
   port: 80
   path: /
 
+# AVAILABLE PIZZA SERVICES
+- name: service-available-pizza
+  protocol: http
+  host: upstream-available-pizza
+  port: 80
+  path: /
 
 upstreams:
 # RANDOM FOOD UPSTREAM
@@ -48,6 +54,55 @@ upstreams:
       weight: 40
     - target: hello-kubernetes-pizza-pepperoni.pizza-pepperoni.svc.cluster.local:80
       weight: 40
+
+# AVAILABLE PIZZA UPSTREAM
+# https://docs.konghq.com/gateway-oss/2.4.x/health-checks-circuit-breakers/
+- name: upstream-available-pizza
+  healthchecks:
+    active:
+      healthy:
+        http_statuses:
+          - 200
+          - 201
+          - 404
+        interval: 5
+        successes: 2
+      http_path: /
+      timeout: 2
+      unhealthy:
+        http_failures: 2
+        http_statuses:
+          - 500
+          - 501
+          - 502
+          - 503
+          - 504
+          - 505
+        interval: 5
+        tcp_failures: 5
+        timeouts: 3
+    passive:
+      unhealthy:
+        http_failures: 2
+        http_statuses:
+          - 500
+          - 501
+          - 502
+          - 503
+          - 504
+          - 505
+        tcp_failures: 5
+        timeouts: 3
+      healthy:
+        http_statuses:
+          - 200
+          - 201
+          - 404
+  targets:
+    - target: hello-kubernetes-pizza-cheese.pizza-cheese.svc.cluster.local:80
+      weight: 50
+    - target: hello-kubernetes-pizza-pepperoni.pizza-pepperoni.svc.cluster.local:80
+      weight: 50
 
 
 routes:
@@ -115,7 +170,7 @@ routes:
   paths:
   - /pizza-pepperoni
 
-# RANDOM FOOD
+# RANDOM FOOD ROUTES
 - name: route-random-food
   service: service-random-food
   methods:
@@ -124,6 +179,16 @@ routes:
   preserve_host: false
   paths:
   - /random
+
+# AVAILABLE PIZZA ROUTES
+- name: route-available-pizza
+  service: service-available-pizza
+  methods:
+    - POST
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /available-pizza
 
 # DESERT ROUTES
 - name: desert-route
@@ -135,3 +200,4 @@ routes:
   preserve_host: false
   paths:
   - /desert
+  - /pudim
