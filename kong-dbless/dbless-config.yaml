@@ -2,18 +2,70 @@ _format_version: "2.1"
 _transform: true
 
 services:
-- name: hot-dog-service
+# HOT-DOG SERVICES
+- name: service-hot-dog
   protocol: http
-  host: hello-kubernetes-hot-dog.minikube.local
+  host: hello-kubernetes-hot-dog.hot-dog.svc.cluster.local
   port: 80
   path: /
-  # url: http://ingress-nginx-controller.ingress-nginx/
+
+# DESERT SERVICES
+- name: service-desert
+  protocol: http
+  host: pudim.com.br
+  port: 80
+  path: /
 
 routes:
-- name: hot-dog-route
-  service: hot-dog-service
-  methods: []
+# HOT-DOG ROUTES
+- name: route-hot-dog-default
+  service: service-hot-dog
+  methods:
+    - GET
   strip_path: true
   preserve_host: false
   paths:
-  - /
+  - /hot-dog
+
+- name: route-hot-dog-legacy
+  service: service-hot-dog
+  methods:
+    - GET
+    - POST
+  strip_path: false
+  preserve_host: false
+  paths:
+  - /hot-dog/legacy
+  plugins:
+    - name: request-termination
+      enabled: true
+      config:
+        body: |
+          {"error": "this api has been deprecated"}
+        status_code: 410
+        content_type: application/json
+
+- name: route-hot-dog-login
+  service: service-hot-dog
+  methods:
+    - POST
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /hot-dog/login
+  plugins:
+  - name: request-transformer
+    config:
+      replace:
+        uri: /login
+
+# DESERT ROUTES
+- name: desert-route
+  service: service-desert
+  methods:
+    - GET
+    - POST
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /desert

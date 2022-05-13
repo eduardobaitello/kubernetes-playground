@@ -1,5 +1,5 @@
 # kong-dbless
-A playground that uses Kong in DBLess mode + Nginx Ingress Controllers.
+A playground that uses Kong in DBLess mode.
 
 ## Requirements
 - kubectl
@@ -13,9 +13,12 @@ Use the following to start Minikube:
 ```
 minikube start --kubernetes-version=v1.22.4 --service-cluster-ip-range=172.16.0.0/16 --nodes=2
 ```
-Then, enable the ingress addon:
+
+## Build the app image
 ```
-minikube addons enable ingress
+export IMAGE_VERSION="latest"
+make build-image-linux
+minikube image load eduardobaitello/hello-kubernetes:latest --overwrite
 ```
 
 ## Installing Kong Release
@@ -34,7 +37,30 @@ helm upgrade kong kong/kong -n kong --set-file dblessConfig.config=./dbless-conf
 ```
 
 ## Deploying test applications
-Create the namespace, and deploy the apps using helm:
+
+Clone the hello-kubernetes project:
 ```
-helm install --create-namespace --values ./values-hello-kubernetes --namespace hot-dog hot-dog ./hello-kubernetes
+git clone git@github.com:eduardobaitello/hello-kubernetes.git
 ```
+
+Create the namespaces, and deploy the apps using helm:
+```
+helm install --create-namespace --namespace hot-dog hot-dog ./hello-kubernetes/deploy/helm/hello-kubernetes \
+  --set ingress.enabled=true \
+  --set ingress.pathPrefix="/hot-dog/" \
+  --set service.type="ClusterIP"
+
+helm install --create-namespace --namespace pizza-cheese pizza-cheese ./hello-kubernetes/deploy/helm/hello-kubernetes \
+  --set ingress.enabled=true \
+  --set ingress.pathPrefix="/pizza-cheese/" \
+  --set service.type="ClusterIP"
+
+
+helm install --create-namespace --namespace pizza-pepperoni pizza-pepperoni ./hello-kubernetes/deploy/helm/hello-kubernetes \
+  --set ingress.enabled=true \
+  --set ingress.pathPrefix="/pizza-pepperoni/" \
+  --set service.type="ClusterIP"
+
+```
+
+Use `minikube tunnel` to access `kong-kong-proxy` service!
