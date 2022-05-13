@@ -1,0 +1,203 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+# HOT-DOG SERVICES
+- name: service-hot-dog
+  protocol: http
+  host: hello-kubernetes-hot-dog.hot-dog.svc.cluster.local
+  port: 80
+  path: /
+
+# PIZZA CHEESE SERVICES
+- name: service-pizza-cheese
+  protocol: http
+  host: hello-kubernetes-pizza-cheese.pizza-cheese.svc.cluster.local
+  port: 80
+  path: /
+
+# PIZZA PEPPERONI SERVICES
+- name: service-pizza-pepperoni
+  protocol: http
+  host: hello-kubernetes-pizza-pepperoni.pizza-pepperoni.svc.cluster.local
+  port: 80
+  path: /
+
+# DESERT SERVICES
+- name: service-desert
+  protocol: http
+  host: pudim.com.br
+  port: 80
+  path: /
+
+# RANDOM FOOD SERVICES
+- name: service-random-food
+  protocol: http
+  host: upstream-random-food
+  port: 80
+  path: /
+
+# AVAILABLE PIZZA SERVICES
+- name: service-available-pizza
+  protocol: http
+  host: upstream-available-pizza
+  port: 80
+  path: /
+
+upstreams:
+# RANDOM FOOD UPSTREAM
+- name: upstream-random-food
+  targets:
+    - target: hello-kubernetes-hot-dog.hot-dog.svc.cluster.local:80
+      weight: 20
+    - target: hello-kubernetes-pizza-cheese.pizza-cheese.svc.cluster.local:80
+      weight: 40
+    - target: hello-kubernetes-pizza-pepperoni.pizza-pepperoni.svc.cluster.local:80
+      weight: 40
+
+# AVAILABLE PIZZA UPSTREAM
+# https://docs.konghq.com/gateway-oss/2.4.x/health-checks-circuit-breakers/
+- name: upstream-available-pizza
+  healthchecks:
+    active:
+      healthy:
+        http_statuses:
+          - 200
+          - 201
+          - 404
+        interval: 5
+        successes: 2
+      http_path: /
+      timeout: 2
+      unhealthy:
+        http_failures: 2
+        http_statuses:
+          - 500
+          - 501
+          - 502
+          - 503
+          - 504
+          - 505
+        interval: 5
+        tcp_failures: 5
+        timeouts: 3
+    passive:
+      unhealthy:
+        http_failures: 2
+        http_statuses:
+          - 500
+          - 501
+          - 502
+          - 503
+          - 504
+          - 505
+        tcp_failures: 5
+        timeouts: 3
+      healthy:
+        http_statuses:
+          - 200
+          - 201
+          - 404
+  targets:
+    - target: hello-kubernetes-pizza-cheese.pizza-cheese.svc.cluster.local:80
+      weight: 50
+    - target: hello-kubernetes-pizza-pepperoni.pizza-pepperoni.svc.cluster.local:80
+      weight: 50
+
+
+routes:
+# HOT-DOG ROUTES
+- name: route-hot-dog-default
+  service: service-hot-dog
+  methods:
+    - GET
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /hot-dog
+
+- name: route-hot-dog-legacy
+  service: service-hot-dog
+  methods:
+    - GET
+    - POST
+  strip_path: false
+  preserve_host: false
+  paths:
+  - /hot-dog/legacy
+  # ! Enable this to terminate the route
+  # plugins:
+  #   - name: request-termination
+  #     enabled: true
+  #     config:
+  #       body: |
+  #         {"error": "this api has been deprecated"}
+  #       status_code: 410
+  #       content_type: application/json
+
+- name: route-hot-dog-login
+  service: service-hot-dog
+  methods:
+    - POST
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /hot-dog/login
+  plugins:
+  - name: request-transformer
+    config:
+      replace:
+        uri: /login
+
+# PIZZA-CHEESE ROUTES
+- name: route-pizza-cheese-default
+  service: service-pizza-cheese
+  methods:
+    - GET
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /pizza-cheese
+
+
+# PIZZA-PEPPERONI ROUTES
+- name: route-pizza-pepperoni-default
+  service: service-pizza-pepperoni
+  methods:
+    - GET
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /pizza-pepperoni
+
+# RANDOM FOOD ROUTES
+- name: route-random-food
+  service: service-random-food
+  methods:
+    - POST
+  strip_path: false
+  preserve_host: false
+  paths:
+  - /random
+
+# AVAILABLE PIZZA ROUTES
+- name: route-available-pizza
+  service: service-available-pizza
+  methods:
+    - POST
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /available-pizza
+
+# DESERT ROUTES
+- name: desert-route
+  service: service-desert
+  methods:
+    - GET
+    - POST
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /desert
+  - /pudim
