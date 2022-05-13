@@ -159,6 +159,21 @@ routes:
   paths:
   - /pizza-cheese
 
+- name: route-pizza-cheese-type
+  service: service-pizza-cheese
+  methods:
+    - GET
+    - POST
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /pizza-cheese/(?<type>cheddar$|parmesan$)
+  plugins:
+  - name: request-transformer
+    config:
+      replace:
+        uri: /type/$(uri_captures['type'])
+
 
 # PIZZA-PEPPERONI ROUTES
 - name: route-pizza-pepperoni-default
@@ -169,6 +184,24 @@ routes:
   preserve_host: false
   paths:
   - /pizza-pepperoni
+
+- name: route-pizza-pepperoni-request
+  service: service-pizza-pepperoni
+  methods:
+    - GET
+    - POST
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /pizza-pepperoni/request
+  plugins:
+    - name: rate-limiting
+      config:
+        minute: 10
+        second: 1
+        limit_by: ip
+        policy: local
+        hide_client_headers: false
 
 # RANDOM FOOD ROUTES
 - name: route-random-food
@@ -188,7 +221,7 @@ routes:
   strip_path: true
   preserve_host: false
   paths:
-  - /available-pizza
+  - /available-pizza($|/$)
 
 # DESERT ROUTES
 - name: desert-route
