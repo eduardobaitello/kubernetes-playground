@@ -14,13 +14,6 @@ Use the following to start Minikube:
 minikube start --kubernetes-version=v1.22.4 --service-cluster-ip-range=172.16.0.0/16 --nodes=2
 ```
 
-## Build the app image
-```
-export IMAGE_VERSION="latest"
-make build-image-linux
-minikube image load eduardobaitello/hello-kubernetes:latest --overwrite
-```
-
 ## Installing Kong Release
 This playground uses the official Kong helm chart.
 
