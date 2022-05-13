@@ -9,12 +9,46 @@ services:
   port: 80
   path: /
 
+# PIZZA CHEESE SERVICES
+- name: service-pizza-cheese
+  protocol: http
+  host: hello-kubernetes-pizza-cheese.pizza-cheese.svc.cluster.local
+  port: 80
+  path: /
+
+# PIZZA PEPPERONI SERVICES
+- name: service-pizza-pepperoni
+  protocol: http
+  host: hello-kubernetes-pizza-pepperoni.pizza-pepperoni.svc.cluster.local
+  port: 80
+  path: /
+
 # DESERT SERVICES
 - name: service-desert
   protocol: http
   host: pudim.com.br
   port: 80
   path: /
+
+# RANDOM FOOD SERVICES
+- name: service-random-food
+  protocol: http
+  host: upstream-random-food
+  port: 80
+  path: /
+
+
+upstreams:
+# RANDOM FOOD UPSTREAM
+- name: upstream-random-food
+  targets:
+    - target: hello-kubernetes-hot-dog.hot-dog.svc.cluster.local:80
+      weight: 20
+    - target: hello-kubernetes-pizza-cheese.pizza-cheese.svc.cluster.local:80
+      weight: 40
+    - target: hello-kubernetes-pizza-pepperoni.pizza-pepperoni.svc.cluster.local:80
+      weight: 40
+
 
 routes:
 # HOT-DOG ROUTES
@@ -36,14 +70,15 @@ routes:
   preserve_host: false
   paths:
   - /hot-dog/legacy
-  plugins:
-    - name: request-termination
-      enabled: true
-      config:
-        body: |
-          {"error": "this api has been deprecated"}
-        status_code: 410
-        content_type: application/json
+  # ! Enable this to terminate the route
+  # plugins:
+  #   - name: request-termination
+  #     enabled: true
+  #     config:
+  #       body: |
+  #         {"error": "this api has been deprecated"}
+  #       status_code: 410
+  #       content_type: application/json
 
 - name: route-hot-dog-login
   service: service-hot-dog
@@ -58,6 +93,37 @@ routes:
     config:
       replace:
         uri: /login
+
+# PIZZA-CHEESE ROUTES
+- name: route-pizza-cheese-default
+  service: service-pizza-cheese
+  methods:
+    - GET
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /pizza-cheese
+
+
+# PIZZA-PEPPERONI ROUTES
+- name: route-pizza-pepperoni-default
+  service: service-pizza-pepperoni
+  methods:
+    - GET
+  strip_path: true
+  preserve_host: false
+  paths:
+  - /pizza-pepperoni
+
+# RANDOM FOOD
+- name: route-random-food
+  service: service-random-food
+  methods:
+    - POST
+  strip_path: false
+  preserve_host: false
+  paths:
+  - /random
 
 # DESERT ROUTES
 - name: desert-route

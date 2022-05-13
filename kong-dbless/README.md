@@ -60,7 +60,6 @@ helm install --create-namespace --namespace pizza-pepperoni pizza-pepperoni ./he
   --set ingress.enabled=true \
   --set ingress.pathPrefix="/pizza-pepperoni/" \
   --set service.type="ClusterIP"
-
 ```
 
 Use `minikube tunnel` to access `kong-kong-proxy` service!
