@@ -31,7 +31,18 @@ helm repo update
 helm install --create-namespace prometheus-operator prometheus-community/kube-prometheus-stack -n prometheus-operator --values values.yaml --version 36.0.2
 ```
 
+### Upgrade Prometheus Operator Release
+
 To upgrade the existing release:
 ```
 helm upgrade prometheus-operator prometheus-community/kube-prometheus-stack -n prometheus-operator --values values.yaml
+```
+
+### Uninstall Prometheus Operator Release
+
+When unninstalling this release, make sure to remove the respective webhooks, otherwise new installations will fail:
+```
+kubectl delete validatingwebhookconfiguration prometheus-operator-kube-p-admission
+
+kubectl delete mutatingwebhookconfiguration prometheus-operator-kube-p-admission
 ```
