@@ -108,8 +108,10 @@ Here are some PromQL examples:
   - Sum of HTTP requestes, aggregated by `pod`
 - `sum by (method,path) (http_request_duration_seconds_count)`
   - Sum of HTTP requestes, aggregated by `method` and `path`
-- `(100 * sum (http_request_duration_seconds_count{code=~"^5.."})) / sum (http_request_duration_seconds_count)`
-  - Percentage of requests with `5xx` status code
+- `(100 * sum(http_request_duration_seconds_count{code=~"^5.."})) / sum(http_request_duration_seconds_count)`
+  - Percentage of requests with `5xx` status code, overall
+- `(100 * sum(rate(http_request_duration_seconds_count{code=~"^5.."}[2m]))) / sum(rate(http_request_duration_seconds_count[2m]))`
+  - Percentage of requests with `5xx` status code, last 2 minutes
 - `rate(http_request_duration_seconds_count[2m])`
   - Per-second rate of HTTP requests (2 minutes)
 - `rate(http_request_duration_seconds_count{code="200"}[2m])`

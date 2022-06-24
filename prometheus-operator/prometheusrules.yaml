@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: alert-requests
+  namespace: hello-kubernetes
+spec:
+  groups:
+  - name: alerts-requests
+    rules:
+    - alert: Http5xxErrorRate
+      expr: (100 * sum(rate(http_request_duration_seconds_count{code=~"^5.."}[2m]))) / sum(rate(http_request_duration_seconds_count[2m])) > 2
+      for: 15s
+      labels:
+        severity: critical
+      annotations:
+        description: |-
+          Too many HTTP requests with status 5xx (> 2%) in the past 2 minute considering route.
+          Value: "{{ $value }}"
+        summary: High HTTP 5xx error rate 
