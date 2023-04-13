@@ -60,11 +60,11 @@ See [Installation Configuration Profiles](https://istio.io/latest/docs/setup/add
 
 Demo application are adaptations from the the following project: https://github.com/DickChesterwood/istio-fleetman
 
-### No Istio CRDs
+### 01-no-istio-crds
 
-#### 01-no-istio-crds
+Full working application, without VirtualServices and DestionationRules.
 
-Full working application, without Virtual Services and Routes.
+Go to http://$MINIKUBE_IP:30080
 
 ``` bash
 kubectl apply -f istio-fleetman/01-no-istio-crds/01-manifests.yaml
@@ -73,7 +73,7 @@ kubectl apply -f istio-fleetman/01-no-istio-crds/01-manifests.yaml
 - See traffic on Kiali.
 - See tracings on Jaeger.
 
-#### 02-no-istio-crds-bodge-canary
+### 02-no-istio-crds-bodge-canary
 
 Still no Istio CRDs, but with two staff-service deployments using different replicas counts.
 
@@ -81,7 +81,16 @@ Still no Istio CRDs, but with two staff-service deployments using different repl
 kubectl apply -f istio-fleetman/02-no-istio-crds-bodge-canary/01-manifests.yaml
 ```
 
-- See traffic balancing between 2 versions from staff-service, based only on replicas count
-- Use Kiali, to manipulatate traffic (i.e., create VirtualServices and DestionationRoutes)
+- See traffic balancing between 2 versions from staff-service. A bad canary based only on replicas count.
+  - Note the `version` labels.
+- Use Kiali to manipulatate traffic (i.e., create VirtualServices and DestionationRules).
   - Use Actions to suspend the staff-service traffic. See erros in the webpapp.
-  - Use Kiali to create a weighted routing.
+  - Use Kiali to create a weighted routing (only 10% place holders, for example).
+
+You may want to use curl to test the weightig properly:
+```bash
+MINIKUBE_IP=$(minikube ip)
+while true; do curl "http://${MINIKUBE_IP}:30080/api/vehicles/driver/City%20Truck"; sleep 0.5; echo; done
+```
+
+Try to understand: What are VirtualServices for?
