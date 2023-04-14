@@ -215,3 +215,19 @@ while true; do curl -s -H "HEADER_NAME: value" "http://${MINIKUBE_IP}:${INGRESS_
 ```
 
 Use this scenario to play arround with different headers, combine them with weighting routing.
+
+### 05-with-crds-complete-canary
+
+This scenario has two version for staff-services, one them (`risky`) is using an image that behaves badly on purpose.
+
+```bash
+kubectl apply -f istio-fleetman/05-circuit-breaking/
+```
+
+After aplying, give it a try on your browser (remember to use the ingress nodePort as exported aborve). You should see some erros on loading drivers information.
+
+To trigger the circuit breaking, it's best to try with `curl`:
+```bash
+while true; do curl -s "http://${MINIKUBE_IP}:${INGRESS_NODE_PORT}/api/vehicles/driver/City%20Truck"; sleep 0.5; echo; done
+```
+
