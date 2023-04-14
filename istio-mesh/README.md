@@ -231,3 +231,4 @@ To trigger the circuit breaking, it's best to try with `curl`:
 while true; do curl -s "http://${MINIKUBE_IP}:${INGRESS_NODE_PORT}/api/vehicles/driver/City%20Truck"; sleep 0.5; echo; done
 ```
 
+The outlier is configured to trigger the circuit brake after 2 consecutive errors, then block the traffic for 15 seconds. This should be easy to trigger and see using `curl`.
