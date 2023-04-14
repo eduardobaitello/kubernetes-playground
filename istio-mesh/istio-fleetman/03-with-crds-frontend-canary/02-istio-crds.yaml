@@ -1,0 +1,36 @@
+---
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: fleetman-webapp
+  namespace: default
+spec:
+  hosts:  # which incoming host are we applying the proxy rules to???
+    - "*" # This is not ideal. Try to use a specific custom domain name by editing your /etc/hosts file
+  gateways:
+    - ingress-gateway-configuration
+  http:
+    - route:
+        - destination:
+            host: fleetman-webapp
+            subset: original # must match a subset in the DestinationRule
+          weight: 90
+        - destination:
+            host: fleetman-webapp
+            subset: experimental # must match a subset in the DestinationRule
+          weight: 10
+---
+kind: DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: fleetman-webapp
+  namespace: default
+spec:
+  host: fleetman-webapp
+  subsets:
+    - labels:
+        version: original # this acts as label selector; must match the label in the pods
+      name: original # must match a subset in the VirtualService
+    - labels:
+        version: experimental # this acts as label selector; must match the label in the pods
+      name: experimental # must match a subset in the VirtualService
