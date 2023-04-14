@@ -19,7 +19,6 @@ spec:
         - name: SPRING_PROFILES_ACTIVE
           value: production-microservice
         command: ["java","-Xmx50m","-jar","webapp.jar"]
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -42,7 +41,6 @@ spec:
         - name: SPRING_PROFILES_ACTIVE
           value: production-microservice
         command: ["java","-Xmx50m","-jar","webapp.jar"]
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -65,7 +63,6 @@ spec:
         - name: SPRING_PROFILES_ACTIVE
           value: production-microservice
         command: ["java","-Xmx50m","-jar","webapp.jar"]
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -88,7 +85,6 @@ spec:
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: production-microservice
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -111,7 +107,6 @@ spec:
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: production-microservice
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -133,7 +128,6 @@ spec:
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: production-microservice
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -172,23 +166,20 @@ spec:
   ports:
     - name: http
       port: 80
-  type: ClusterIP
+      nodePort: 30080 # This can be removed after creating the gateway
+  type: NodePort # Change this to ClusterIP after creating the gateway
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: fleetman-webapp
+  name: fleetman-position-tracker
 spec:
-  # This defines which pods are going to be represented by this Service
-  # The service becomes a network endpoint for either other services
-  # or maybe external users to connect to (eg browser)
   selector:
-    app: webapp
+    app: position-tracker
   ports:
     - name: http
-      port: 80
-      nodePort: 30080 # This can be removed after creating the gateway
-  type: NodePort # Change this to ClusterIP after creating the gateway
+      port: 8080
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: Service

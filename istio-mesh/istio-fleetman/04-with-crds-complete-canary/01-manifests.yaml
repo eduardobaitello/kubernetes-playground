@@ -201,16 +201,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: fleetman-webapp
+  name: fleetman-position-tracker
 spec:
-  # This defines which pods are going to be represented by this Service
-  # The service becomes a network endpoint for either other services
-  # or maybe external users to connect to (eg browser)
   selector:
-    app: webapp
+    app: position-tracker
   ports:
     - name: http
-      port: 80
+      port: 8080
   type: ClusterIP
 ---
 apiVersion: v1
