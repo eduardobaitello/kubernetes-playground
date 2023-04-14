@@ -9,12 +9,24 @@ A playground running Minikube + Istio and a demo application running on mesh.
 *All versions covererd in the `.tools-versions` file.*
 
 ## Environment
+
+Before running the environment, you can use Docker do run the envoy demo:
+```bash
+docker build -f envoy_demo/Dockerfile envoy_demo/ -t envoy:demo
+
+docker run -it -p 10000:10000 -p 9901:9901 envoy:demo
+```
+
+Go to http://localhost:10000/google and http://localhost:10000/ifood to see the difference.
+
+Try also to explode the Admin API on http://localhost:9901.
+
+## Installing Minikube
+
 Use the following to start Minikube:
 ```bash
 minikube start --kubernetes-version=v1.25.8 --service-cluster-ip-range=172.16.0.0/16 --memory="6g" --cpus="4"
 ```
-
-## Installing Istio
 
 ## Istio Core
 Install IstioD, ingress and egress gateways:
@@ -26,7 +38,6 @@ Add a namespace label to instruct Istio to automatically inject Envoy sidecar pr
 ```bash
 kubectl label namespace default istio-injection=enabled
 ```
-
 
 ## Addons
 Install [Addons](https://github.com/istio/istio/tree/release-1.16/samples/addons): Grafana, Kiali, Jaeger and Prometheus
