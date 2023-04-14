@@ -60,6 +60,8 @@ See [Installation Configuration Profiles](https://istio.io/latest/docs/setup/add
 
 Demo application are adaptations from the the following project: https://github.com/DickChesterwood/istio-fleetman
 
+For every scenario, make sure to do a cleanup `kubectl delete -f istio-fleetman/0x-xxxxxxx/` before proceeding.
+
 ### 01-no-istio-crds
 
 Full working application, without VirtualServices and DestionationRules.
@@ -87,10 +89,65 @@ kubectl apply -f istio-fleetman/02-no-istio-crds-bodge-canary/01-manifests.yaml
   - Use Actions to suspend the staff-service traffic. See erros in the webpapp.
   - Use Kiali to create a weighted routing (only 10% place holders, for example).
 
-You may want to use curl to test the weightig properly:
+You may want to use curl to test the weighting properly:
 ```bash
-MINIKUBE_IP=$(minikube ip)
+MINIKUBE_IP="$(minikube ip)"
 while true; do curl "http://${MINIKUBE_IP}:30080/api/vehicles/driver/City%20Truck"; sleep 0.5; echo; done
 ```
 
-Try to understand: What are VirtualServices for?
+Try to understand: What are VirtualServices and DestinationRules for?
+
+### 03-with-crds-frontend-canary
+
+Apply the files in order, testing each sugestion before proceeding.
+
+The file below create two different deployment for the frontend webapp. The one with the `-experimental` tag has on red bar on the top.
+
+```bash
+kubectl apply -f istio-fleetman/03-with-crds-frontend-canary/01-manifests.yaml
+```
+
+Go to http://$MINIKUBE_IP:30080 on your web browser. Do some refresh and try to see both versions (it's recommended to clear your browser's cache before trying).
+
+You can also use `curl` to see the balancing:
+```bash
+while true; do curl -s "http://${MINIKUBE_IP}:30080" | grep title; sleep 0.5; echo; done
+```
+
+Create a weighted routing using Kiali. Try to make only 5% of the requests go to experimental version.
+
+**Question**: Why this does not work? Why it worked before for staff-service?
+<details>
+  <summary><b>Answer:</b></summary>
+  Because the proxies run <b>after</b> a container makes request.<br>
+
+  There is no proxy present when the requests are made from outside into the cluster. To solve this, you need to create edge proxy (i.e., a <b>Gateway</b>).
+</details>
+
+Before proceeding, remove through Kiali (or using `kubectl`) the `virtualservices` and `destinationrules` created by Kiali.
+
+Recreate those CRDs applying the next file from this scenario:
+```bash
+kubectl apply -f istio-fleetman/03-with-crds-frontend-canary/02-istio-crds.yaml
+```
+
+This should create a similiar VirtualService and DestinationRule, as created by the Kiali UI. The weighted routing is still not working.
+
+Now, apply the Gateway file:
+```bash
+kubectl apply -f istio-fleetman/03-with-crds-frontend-canary/03-gateway-crd.yaml
+```
+
+The `Gateway` CRD will create a listening on port 80 for the envoys selected by the label `istio: ingressgateway`, i.e., the Istio Ingess Gateway from `istio-system` namespace.
+
+Note that the `VirtualService` created in the previous step now mentions these Gateways. From now on, you need to use the Ingress Gateway node port for the requests:
+```bash
+MINIKUBE_IP="$(minikube ip)"
+INGRESS_NODE_PORT=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
+
+while true; do curl -s "http://${MINIKUBE_IP}:${INGRESS_NODE_PORT}" | grep title; sleep 0.5; echo; done
+```
+
+Make some requests,  either in your browser or using the above `curl` command. The gateway is now acting as proxy edge, so weighted route must work properly this time.
+
+At this point, you can even edit the webapp kubernetes `service`, removing its `NodePort` and changing it to a regular `ClusterIP` service.
