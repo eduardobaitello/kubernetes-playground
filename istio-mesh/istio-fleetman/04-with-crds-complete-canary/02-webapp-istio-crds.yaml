@@ -1,0 +1,54 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: ingress-gateway-configuration
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation, must match the labes from the istio-ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"   # Domain name of the external website
+---
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: fleetman-webapp
+  namespace: default
+spec:
+  hosts:  # which incoming host are we applying the proxy rules to???
+    - "*" # remember that this os not ideal, this is just for demo purposes, as we are using a single exposed application
+  gateways:
+    - ingress-gateway-configuration
+  http:
+    - match:
+      - headers:  # IF
+          my-special-header:
+            exact: canary
+      route: # THEN
+      - destination:
+          host: fleetman-webapp
+          subset: experimental
+    - route: # CATCH ALL
+      - destination:
+          host: fleetman-webapp
+          subset: original
+---
+kind: DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: fleetman-webapp
+  namespace: default
+spec:
+  host: fleetman-webapp
+  subsets:
+    - labels:
+        version: original # this acts as label selector; must match the label in the pods
+      name: original # must match a subset in the VirtualService
+    - labels:
+        version: experimental # this acts as label selector; must match the label in the pods
+      name: experimental # must match a subset in the VirtualService

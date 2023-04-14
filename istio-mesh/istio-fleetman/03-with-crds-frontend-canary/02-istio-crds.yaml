@@ -29,8 +29,8 @@ spec:
   host: fleetman-webapp
   subsets:
     - labels:
-        version: original
+        version: original # this acts as label selector; must match the label in the pods
       name: original # must match a subset in the VirtualService
     - labels:
-        version: experimental
+        version: experimental # this acts as label selector; must match the label in the pods
       name: experimental # must match a subset in the VirtualService

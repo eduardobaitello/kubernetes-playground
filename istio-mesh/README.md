@@ -60,7 +60,7 @@ See [Installation Configuration Profiles](https://istio.io/latest/docs/setup/add
 
 Demo application are adaptations from the the following project: https://github.com/DickChesterwood/istio-fleetman
 
-For every scenario, make sure to do a cleanup `kubectl delete -f istio-fleetman/0x-xxxxxxx/` before proceeding.
+For each scenario, make sure to do a cleanup `kubectl delete -f istio-fleetman/0x-xxxxxxx/` before proceeding.
 
 ### 01-no-istio-crds
 
@@ -151,3 +151,56 @@ while true; do curl -s "http://${MINIKUBE_IP}:${INGRESS_NODE_PORT}" | grep title
 Make some requests,  either in your browser or using the above `curl` command. The gateway is now acting as proxy edge, so weighted route must work properly this time.
 
 At this point, you can even edit the webapp kubernetes `service`, removing its `NodePort` and changing it to a regular `ClusterIP` service.
+
+### 04-with-crds-complete-canary
+
+This is a more complete scenario with canary set for both webapp and staff services.
+
+Instead using weighting, the traffic split is configured to use header matching. Requests containing the header `my-special-header: canary` should go to respective canary versions.
+
+You can apply all these files at once:
+```bash
+kubectl apply -f istio-fleetman/04-with-crds-complete-canary/
+```
+
+The service from webapp is now a `ClusterIP` service, the only way to access the frontend is through the ingress, so remember to export Minikube IP and the ingress port:
+```bash
+export MINIKUBE_IP="$(minikube ip)"
+export INGRESS_NODE_PORT=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
+```
+
+Start with browser requests **without any extra headers**, you should see only requests going to the `original` and `placeholder` versions from `webapp` and `staff-service`, respectively. That's ok.
+
+<img src="./istio-fleetman/04-with-crds-complete-canary/images/01_canary_headers_whithout_headers.png" alt="No requests going to canary versions" width="70%" height="70%">
+
+Now, try **passing the header `my-special-header: canary`**, using any extension to modify the request header on your browser. It's is expected that both services are now using their alternative versions, right? Wrong!
+
+Only the `webapp` version is using it's alternative version. The `staff-services` continue to receive requests on the `placeholder`.
+
+<img src="./istio-fleetman/04-with-crds-complete-canary/images/02_canary_headers_whith_wrong_headers.png" alt="Canary only works for frontend service" width="70%" height="70%">
+
+Try to figure it out! Think about it before proceeding.
+
+<details>
+  <summary><b>Answer:</b></summary>
+  It's all about header propagation!<br>
+
+  The canary header is lost after the first proxy, so the `staff-services` never receives it. **It's app resonsibility to propagate headers.**
+
+  In this scenario, the applications are indeed prepared for this. In these microservices, all headers starting with `x-` are propagated. Try to edit the istio rules changing the header name to `x-my-special-header`.
+
+  Try again, the canary requests should work for both services now.
+</details>
+
+
+Remember that you can also use `curl` to test canary requests:
+
+```bash
+# For the webapp service
+while true; do curl -s -H "HEADER_NAME: value" "http://${MINIKUBE_IP}:${INGRESS_NODE_PORT}" | grep title; sleep 0.5; echo; done
+
+# For the staff-service
+while true; do curl -s -H "HEADER_NAME: value" "http://${MINIKUBE_IP}:${INGRESS_NODE_PORT}/api/vehicles/driver/City%20Truck"; sleep 0.5; echo; done
+```
+
+Use this scenario to play arround with different headers, combine them with weighting routing.

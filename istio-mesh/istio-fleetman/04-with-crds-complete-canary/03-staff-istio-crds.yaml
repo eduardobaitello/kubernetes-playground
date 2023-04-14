@@ -1,0 +1,36 @@
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: fleetman-staff-service
+  namespace: default
+spec:
+  hosts:
+    - fleetman-staff-service # pay attention to this matcher, we do not need to use the wildcard here, it only needs to match the service name
+  http:
+    - match:
+        - headers:
+            my-special-header:
+              exact: canary
+      route:
+        - destination:
+            host: fleetman-staff-service
+            subset: canary
+    - route:
+        - destination:
+            host: fleetman-staff-service
+            subset: placeholder
+---
+kind: DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: fleetman-staff-service
+  namespace: default
+spec:
+  host: fleetman-staff-service
+  subsets:
+    - labels:
+        version: placeholder
+      name: placeholder
+    - labels:
+        version: canary
+      name: canary
